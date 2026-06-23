@@ -10,5 +10,4 @@ class Cliente:
     def __str__(self):
         return(f"Aluno ({self.nome}, {self.cpf}, {self.idade}, {self.id_cliente}, {self.senha})")
     
-    #oi pipinho
         

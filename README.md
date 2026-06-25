@@ -1,7 +1,6 @@
-# prog-estru-dados-2026.1
-# Sistema de Gestão de Farmácia
+# Sistema de Gestão de Farmácia - Trabalho Final de PED 2026.1
 
-Um sistema desenvolvido em Python e integrado com banco de dados MySQL para gerenciamento de clientes, controle de estoque e fluxo de pedidos de medicamentos.
+Este é um trabalho desenvolvido para a finalização da cadeira de Programação e Estrutura de Dados da turma de 2026.1. Desenvolvemos um sistema em Python e integrado com banco de dados MySQL para gerenciamento de clientes, controle de estoque e fluxo de pedidos de medicamentos. 
 
 ---
 

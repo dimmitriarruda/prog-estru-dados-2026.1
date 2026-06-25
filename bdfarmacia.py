@@ -213,4 +213,44 @@ def tb_pedido(id_cliente):
             cursor.close()
         if conn is not None:
             conn.close()
-            
+
+def atualizar_pedido(pedido):
+    conn = None
+    cursor = None
+    try:
+        conn = conectar_mysql()
+        cursor = conn.cursor()
+        sql = """
+            UPDATE tb_pedidos
+            SET dipirona = %s,
+                paracetamol = %s,
+                ibuprofeno = %s,
+                loratadina = %s,
+                ambroxol = %s
+            WHERE id_cliente = %s
+        """
+        
+        valores = (
+            pedido.dipirona,
+            pedido.paracetamol,
+            pedido.ibuprofeno,
+            pedido.loratadina,
+            pedido.ambroxol,
+            pedido.id_cliente
+        )
+        
+        cursor.execute(sql, valores)
+        
+        conn.commit()
+        
+        print("\nPedido concluido com sucesso.")
+        return cursor.rowcount
+    except Error as e:
+        print(f"\nErro ao atualizar cadastro: {e}")
+        return 0
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()            

@@ -1,5 +1,7 @@
 import bdfarmacia
 from cliente import Cliente
+from cliente_atualizar import Cliente_Atualizar
+from pedido import Pedido
 cedulas = {"DIPIRONA":2, "PARACETAMOL":5, "IBUPROFENO":3, "LOROTADINA":2 , "AMBROXOL":1}#banco de dados
 cedulas_usadas = []
 senha = "123"
@@ -14,7 +16,8 @@ while True:
     print("2.Acesse sua Conta")
     print("3.Cadastre-se")
     print("4.Editar Cadastro")
-    print("5.Sair\n")
+    print("5.Excluir Cadastro")
+    print("6.Sair\n")
     
     
     x = input("Digite o número da operação que você deseja executar: ")
@@ -30,228 +33,218 @@ while True:
     if x == '2':
         while True:
             cpf_busca = input("Digite o seu cpf: ")
-            dados = bdfarmacia.buscar_por_cpf(cpf_busca)
+            dados = bdfarmacia.verificar_por_cpf(cpf_busca)
             if dados is None:
                 print("\nEsse cpf não está cadastrado.")
             
             else:
-                cliente_obj = Cliente(
+                cliente_obj = Cliente_Atualizar(
+                    dados["id_cliente"],
                     dados["nome"],
+                    dados["idade"],
                     dados["cpf"],
-                    dados["senha"],
-                    dados["idade"]
+                    dados["senha"]
                 )
                  
                 senha_busca = input("Digite a sua senha: ")
                 if (cliente_obj.senha == senha_busca):
                     while True:
                         print("\n---MENU DO CLIENTE---")
-                        print("1.Realizar Compra")
-                        print("2.Exibir Histórico")
-                        print("3.Excluir Histórico")
-                        print("4.Sair\n")
-                        x = input("Escolha uma opção: ") 
-                                
-                        if x == '1':
+                        print("1.Realizar Pedido")
+                        print("2.Exibir Estoque")
+                        print("3.Sair\n")
+                        z = input("Escolha uma opção: ")
+                        
+                        data = bdfarmacia.tb_pedido(cliente_obj.id_cliente)
+                        pedido_obj = Pedido(
+                            data["dipirona"],
+                            data["paracetamol"],
+                            data["ibuprofeno"],
+                            data["loratadina"],
+                            data["ambroxol"],
+                            data["id_cliente"]
+                        ) 
+      
+                        if z == '1':
                             while True:
-                                print("\n--MENU DE COMPRA--")
-                                print("1.Continuar Compra")
+                                print("\n--MENU DE PEDIDO--")
+                                print("1.Continuar Pedido")
                                 print("2.Voltar")
                                 y = input("Escolha uma opção: ")
                                 
                                 if y == '1':
-                                    produto = input("\nInforme o item que você deseja comprar:\n(Dipirona, Paracetamol, Ibuprofeno, Lorotadina, Ambroxol\n").lower()
-                                    for i in cedulas:
-                                        if produto not in cedulas:
-                                            print("Item Inválido.")
+                                    produto = input("\nInforme o item que você deseja pedir:\n(Dipirona, Paracetamol, Ibuprofeno, Lorotadina, Ambroxol)\n").lower()
+                                    
+                                    nao_conseguiu = True
+                                    for campo in data.keys():
+                                        if produto == campo:
+                                            nao_conseguiu = False
+                                            quantidade_pedido = int(input(f"\nInforme a quantidade de {produto} que você quer pedir: "))
+                                            estoque = getattr(pedido_obj, produto, 0)
+                                            if estoque is None:
+                                                estoque = 0
+                                                
+                                            setattr(
+                                                pedido_obj,
+                                                produto,
+                                                estoque + quantidade_pedido
+                                            )
+                                            bdfarmacia.atualizar_pedido(pedido_obj)
                                             break
                                             
-                                        if produto == i:
-                                            quantidade_cedula = int(input("\nInforme a quantidade que você quer comprar: "))
-                                            if quantidade_cedula > 0:
-                                                cedulas[i] += quantidade_cedula
-                                                print("Compra realizada com sucesso.")
-                                            else:
-                                                print("Não temos essa quantidade disponível no estoque.\nCompra Inválida")        
+                                        else:
+                                            continue
+                                        
+                                    if nao_conseguiu:
+                                        print("Item Inválido.")
+                                            
                                 elif y == '2':
                                     break   
                                 
                                 else:
                                     print("Opção Inválida")
                                         
-                        elif x == '2':
-                            print("Resumo do Caixa")
-                            j = 0
-                            for i in cedulas:
-                                print(f"Cédulas de R${i}: {cedulas[i]}")
-                                z = int(i)
-                                j = j + z * cedulas[i]
-                            print(f"Total Disponível: R${j},00")
-                                
-                                
-                        elif x == '4':
+                        elif z == '2':
+                            print("\n---RESUMO DE PEDIDOS---\n")
+                            for campo, valor in data.items():
+                                if campo == "id_cliente" or valor == 0 or campo == "id_pedido":
+                                    continue
+                                else:    
+                                    print(f"Você já pediu {campo}: {valor} vezes")
+
+                        elif z == '3':
                             break 
                         
                         else:
                             print("Opção Inválida")
-                                                 
+                    break                                 
                 else:
                     print("Senha Incorreta!")
-                    break
-                  
+                    break      
                
     if x == '3':
         nome = input("Digite seu nome: ")
+        idade = int(input("Digite sua idade: "))
         
         while True:
             cpf = input("Digite seu cpf: ")
-            j = 0
-            for i in range(len(lista_cadastro)): 
-                if (lista_cadastro[i]["cpf"] == cpf):
-                    print("\nEsse cpf já está cadastrado.")
-                    j = 1
-                    break
-                
-                else:
-                    continue
-            
-            if j == 1:
+            dados = bdfarmacia.verificar_por_cpf(cpf)
+            if dados is not None:
+                print("\nEsse cpf já está cadastrado.")
                 continue
-            
+                
             else:
-                break    
-            
-        idade = int(input("Digite sua idade: "))
+                break
         
-        novo_cadastro = {
-            "nome" : nome,
-            "cpf" : cpf,
-            "idade" : idade
-        }
+        senha = (input("Digite sua senha: "))
         
-        lista_cadastro.append(novo_cadastro)
-        print("\nCadastro incluido com sucesso.")
+        cadastro = Cliente(nome, idade, cpf, senha)
+        bdfarmacia.cadastrar_cliente(cadastro)
         
     if x == '4':
         while True:
-            if len(lista_cadastro) >= 1:
-                cpf_edit = input("Digite o cpf do usuário que você deseja editar: ")
-                for i in range(len(lista_cadastro)): 
-                    if (lista_cadastro[i]["cpf"] == cpf_edit):
-                        
-                        nome = lista_cadastro[i]["nome"]
-                        cpf = lista_cadastro[i]["cpf"]
-                        idade = lista_cadastro[i]["idade"]
-                        
-                        lista_cadastro.remove(lista_cadastro[i])
-                        
-                        while True:
-                            r0 = input("Deseja editar seu nome?(sim ou não) ")
-                            
-                            if r0 == 'sim': 
-                                nome = input("Digite seu nome: ")
-                                break
-                                
-                            elif r0 == 'não':
-                                break
-                            
-                            else:
-                                print("\nDigite Novamente.")
-                                continue
-                        
-                        while True:
-                            r1 = input("Deseja editar seu cpf?(sim ou não) ")
-                            
-                            if r1 == 'sim': 
-                                while True:
-                                    cpf = input("Digite seu cpf: ")
-                                    j = 0
-                                    for i in range(len(lista_cadastro)): 
-                                        if (lista_cadastro[i]["cpf"] == cpf):
-                                            print("\nEsse cpf já está cadastrado.")
-                                            j = 1
-                                            break
-                                        
-                                        else:
-                                            continue
-                                    
-                                    if j == 1:
-                                        continue
-                                    
-                                    else:
-                                        break
-                                break
-                                
-                            elif r1 == 'não':
-                                break
-                            
-                            else:
-                                print("\nDigite Novamente.")
-                                continue    
-                        
-                        while True:
-                            r2 = input("Deseja editar sua idade?(sim ou não) ")
-                            
-                            if r2 == 'sim': 
-                                idade = int(input("Digite sua idade: "))
-                                break
-                                
-                            elif r2 == 'não':
-                                break
-                            
-                            else:
-                                print("\nDigite Novamente.")
-                                continue 
-                        
-                        edit_cadastro = {
-                            "nome" : nome,
-                            "cpf" : cpf,
-                            "idade" : idade
-                        }
-                        
-                        lista_cadastro.append(edit_cadastro)
-                        print("\nCadastro editado com sucesso.")
-                        j = 1
-                        break
-                    else:
-                        if (i == len(lista_cadastro) - 1):
-                            print("\nEsse cpf não está cadastrado.")
-                            j = 0
-                        else:
-                            continue
-                if (j == 1):
-                    break
-                
-                else:
-                    continue
+            cpf_edit = input("Digite o cpf do usuário que você deseja editar: ")
+            dados = bdfarmacia.verificar_por_cpf(cpf_edit)
+            if dados is None:
+                print("\nEsse cpf não está cadastrado.")
+                continue
+            
             else:
-                print("\nA lista ainda não possui nenhum cadastro.")
                 break
-                        
+            
+        cliente_obj2 = Cliente_Atualizar(
+                    dados["id_cliente"],
+                    dados["nome"],
+                    dados["idade"],
+                    dados["cpf"],
+                    dados["senha"]
+                )  
+        
+        while True:
+            r0 = input("Deseja editar seu nome?(sim ou não) ")
+            
+            if r0 == 'sim': 
+                cliente_obj2.nome = input("Digite seu nome: ")
+                break
+                
+            elif r0 == 'não':
+                break
+            
+            else:
+                print("\nDigite Novamente.")
+                continue
+            
+        while True:
+            r1 = input("Deseja editar sua idade?(sim ou não) ")
+            
+            if r1 == 'sim': 
+                cliente_obj2.idade = int(input("Digite sua idade: "))
+                break
+                
+            elif r1 == 'não':
+                break
+            
+            else:
+                print("\nDigite Novamente.")
+                continue
+           
+        while True:
+            r2 = input("Deseja editar seu cpf?(sim ou não) ")
+            
+            if r2 == 'sim': 
+                while True:
+                    cpf_novo = input("Digite seu novo cpf: ")
+                    dados = bdfarmacia.verificar_por_cpf(cpf_novo)
+                    if dados is not None:
+                        print("\nEsse cpf já está cadastrado.")
+                        continue
+                    
+                    else:
+                        break
+                    
+                cliente_obj2.cpf = cpf_novo
+                break
+                           
+            elif r2 == 'não':
+                break
+            
+            else:
+                print("\nDigite Novamente.")
+                continue
+        
+        while True:
+            r3 = input("Deseja editar sua senha?(sim ou não) ")
+            
+            if r3 == 'sim': 
+                cliente_obj2.senha = input("Digite sua senha: ")
+                break
+                
+            elif r3 == 'não':
+                break
+            
+            else:
+                print("\nDigite Novamente.")
+                continue
+            
+        bdfarmacia.atualizar_cadastro(cliente_obj2)    
+            
     if x == '5':
         while True:
-            if len(lista_cadastro) >= 1:
-                cpf_exclui = input("Digite o cpf do usuário que você deseja excluir: ")
-                for i in range(len(lista_cadastro)): 
-                    if (lista_cadastro[i]["cpf"] == cpf_exclui):
-                        lista_cadastro.remove(lista_cadastro[i])
-                        print("\nCadastro excluido com sucesso.")
-                        j = 1
-                        break
-                    else:
-                        if (i == len(lista_cadastro) - 1):
-                            print("\nEsse cpf não está cadastrado.")
-                            j = 0
-                        else:
-                            continue
-                if (j == 1):
-                    break
-                
-                else:
-                    continue
+            cpf_exclui = input("Digite o cpf do usuário que você deseja excluir: ")
+            dados = bdfarmacia.verificar_por_cpf(cpf_exclui)
+            if dados is None:
+                print("\nEsse cpf não está cadastrado.")
+                continue
+            
             else:
-                print("\nA lista ainda não possui nenhum cadastro.")
-                break    
+                break
+        
+        senha_exclui = input("Digite a sua senha: ")
+        if senha_exclui == dados["senha"]:
+            bdfarmacia.excluir(cpf_exclui, dados["id_cliente"])
+            
+        else:
+            print("Senha Incorreta.")  
         
     if x == '6':
         break

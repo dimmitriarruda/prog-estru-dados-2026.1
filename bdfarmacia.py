@@ -46,7 +46,7 @@ def listar_todos():
         if conn is not None:
             conn.close()
 
-def buscar_por_cpf(cpf):
+def verificar_por_cpf(cpf):
     conn = None
     cursor = None
     try:
@@ -57,7 +57,7 @@ def buscar_por_cpf(cpf):
         return cursor.fetchone()
 
     except Error as e:
-        print(f"Erro ao buscar CPF: {e}")
+        print(f"\nErro ao verificar CPF: {e}")
         return None
 
     finally:
@@ -65,44 +65,147 @@ def buscar_por_cpf(cpf):
             cursor.close()
         if conn is not None:
             conn.close()
-
-
-def inserir_aluno(aluno):
+            
+def cadastrar_cliente(cadastro):
     conn = None
     cursor = None
     try:
         conn = conectar_mysql()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
         sql = """
-        INSERT INTO tb_aluno 
-        (
-            nome,
-            cpf, 
-            idade,
-            bolsa_monitoria,
-            bolsa_estagio
-        )
-            VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO tb_cliente 
+        (nome, idade, cpf, senha)
+        VALUES (%s, %s, %s, %s)
         """
-        
         valores = (
-            aluno.nome,
-            aluno.cpf,
-            aluno.idade,
-            aluno.bolsa_estagio,
-            aluno.bolsa_monitoria
+            cadastro.nome,
+            cadastro.idade,
+            cadastro.cpf,
+            cadastro.senha
         )
         
         cursor.execute(sql, valores)
         
         conn.commit()
         
-        #return cursor.lastrowid
+        novo_id = cursor.lastrowid
+        
+        sql_pedido = """
+        INSERT INTO tb_pedidos
+        (
+            id_cliente,
+            dipirona,
+            paracetamol,
+            ibuprofeno,
+            loratadina,
+            ambroxol
+        )
+        
+        VALUES
+        (
+            %s,
+            0,
+            0,
+            0,
+            0,
+            0
+        )
+        """
+        cursor.execute(sql_pedido, (novo_id,))
+        conn.commit()
+        print("\nCliente cadastrado com sucesso!")
+        
+    except Error as e:
+        print(f"\nErro ao cadastrar cliente: {e}")
+        return None
     
-        print("Aluno cadastrado com sucesso!")
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
+
+def atualizar_cadastro(cadastro):
+    conn = None
+    cursor = None
+    try:
+        conn = conectar_mysql()
+        cursor = conn.cursor()
+        sql = """
+            UPDATE tb_cliente
+            SET nome = %s,
+                idade = %s,
+                cpf = %s,
+                senha = %s
+            WHERE id_cliente = %s
+        """
+        
+        valores = (
+            cadastro.nome,
+            cadastro.idade,
+            cadastro.cpf,
+            cadastro.senha,
+            cadastro.id_cliente
+        )
+        
+        cursor.execute(sql, valores)
+        
+        conn.commit()
+        
+        print("\nCadastro atualizado com sucesso!")
+        return cursor.rowcount
+    except Error as e:
+        print(f"\nErro ao atualizar cadastro: {e}")
+        return 0
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
+
+def excluir(cpf, id_cliente):
+    conn = None
+    cursor = None
+    try:
+        conn = conectar_mysql()
+        cursor = conn.cursor()
+        
+        sql = "DELETE FROM tb_pedidos WHERE id_cliente = %s"
+        
+        cursor.execute(sql, (id_cliente,))
+        conn.commit()
+        
+        sql = "DELETE FROM tb_cliente WHERE cpf = %s"
+        
+        cursor.execute(sql, (cpf,))
+        conn.commit()
+        
+        print("\nCadastrado excluido com sucesso!")
+        return cursor.rowcount
 
     except Error as e:
-        print(f"Erro ao inserir aluno: {e}")
+        print(f"\nErro ao excluir cadastro: {e}")
+        return 0
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
+
+def tb_pedido(id_cliente):
+    conn = None
+    cursor = None
+    try:
+        conn = conectar_mysql()
+        cursor = conn.cursor(dictionary=True)
+        sql = "SELECT * FROM tb_pedidos WHERE id_cliente = %s"
+        cursor.execute(sql, (id_cliente,))
+        return cursor.fetchone()
+
+    except Error as e:
+        print(f"Erro ao buscar Tabela: {e}")
         return None
 
     finally:
@@ -110,52 +213,4 @@ def inserir_aluno(aluno):
             cursor.close()
         if conn is not None:
             conn.close()
-
-def atualizar(aluno_id, nome, cpf, idade, bolsa_monitoria, bolsa_estagio):
-    conn = None
-    cursor = None
-    try:
-        conn = conectar_mysql()
-        cursor = conn.cursor()
-        sql = """""
-            UPDATE tb_aluno
-            SET nome = %s,
-                cpf = %s,
-                idade = %s,
-                bolsa_monitoria = %s,
-                bolsa_estagio = %s
-            WHERE id = %s
-        """""
-        cursor.execute(sql, (nome, cpf, idade, bolsa_monitoria, bolsa_estagio, aluno_id))
-        conn.commit()
-        return cursor.rowcount
-    except Error as e:
-        print(f"Erro ao atualizar aluno: {e}")
-        return 0
-
-    finally:
-        if cursor is not None:
-            cursor.close()
-        if conn is not None:
-            conn.close()
-
-def excluir(aluno_id):
-    conn = None
-    cursor = None
-    try:
-        conn = conectar_mysql()
-        cursor = conn.cursor()
-        sql = "DELETE FROM tb_aluno WHERE aluno_id = %s"
-        cursor.execute(sql, (aluno_id,))
-        conn.commit()
-        return cursor.rowcount
-
-    except Error as e:
-        print(f"Erro ao excluir aluno: {e}")
-        return 0
-
-    finally:
-        if cursor is not None:
-            cursor.close()
-        if conn is not None:
-            conn.close()
+            

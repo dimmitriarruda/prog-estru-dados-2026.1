@@ -2,17 +2,11 @@ import bdfarmacia
 from cliente import Cliente
 from cliente_atualizar import Cliente_Atualizar
 from pedido import Pedido
-cedulas = {"DIPIRONA":2, "PARACETAMOL":5, "IBUPROFENO":3, "LOROTADINA":2 , "AMBROXOL":1}#banco de dados
-cedulas_usadas = []
-senha = "123"
-
-lista_cadastro = []
-j = 0
 
 while True:
     
     print("\n-----MENU DA FARMÁCIA-----")
-    print("1.Listar Clientes")
+    print("1.Lista de Clientes")
     print("2.Acesse sua Conta")
     print("3.Cadastre-se")
     print("4.Editar Cadastro")
@@ -51,7 +45,7 @@ while True:
                     while True:
                         print("\n---MENU DO CLIENTE---")
                         print("1.Realizar Pedido")
-                        print("2.Exibir Estoque")
+                        print("2.Exibir Histórico de Pedidos")
                         print("3.Sair\n")
                         z = input("Escolha uma opção: ")
                         
@@ -73,7 +67,7 @@ while True:
                                 y = input("Escolha uma opção: ")
                                 
                                 if y == '1':
-                                    produto = input("\nInforme o item que você deseja pedir:\n(Dipirona, Paracetamol, Ibuprofeno, Lorotadina, Ambroxol)\n").lower()
+                                    produto = input("\nInforme o item que você deseja pedir:\n(Dipirona, Paracetamol, Ibuprofeno, Loratadina, Ambroxol)\n").lower()
                                     
                                     nao_conseguiu = True
                                     for campo in data.keys():
@@ -248,4 +242,3 @@ while True:
         
     if x == '6':
         break
-
